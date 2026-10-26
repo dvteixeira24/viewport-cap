@@ -9,8 +9,7 @@ public sealed class RecordingStateMachine
         [RecordingState.Countdown] = new[] { RecordingState.Recording, RecordingState.Idle },
         [RecordingState.Recording] = new[] { RecordingState.Finalizing, RecordingState.Idle },
         [RecordingState.Finalizing] = new[] { RecordingState.Reviewing, RecordingState.Idle },
-        [RecordingState.Reviewing] = new[] { RecordingState.Exporting, RecordingState.Idle },
-        [RecordingState.Exporting] = new[] { RecordingState.Reviewing, RecordingState.Idle }
+        [RecordingState.Reviewing] = new[] { RecordingState.Idle }
     };
     public RecordingState State { get; private set; } = RecordingState.Idle;
     public bool CanTransitionTo(RecordingState next) => Allowed.TryGetValue(State, out var targets) && targets.Contains(next);

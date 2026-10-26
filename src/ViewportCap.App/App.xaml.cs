@@ -23,7 +23,7 @@ public partial class App : Application
     private ScreenRecorderCaptureEngine? _capture;
     private CaptureFlowController? _flow;
     private ToastService? _toast;
-    private volatile IExporter? _exporter;
+    private Task<IExporter?>? _exporterInit;
     private volatile bool _captureAvailable;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -83,7 +83,7 @@ public partial class App : Application
             () => _settings!,
             _store,
             _capture,
-            () => _exporter,
+            () => _exporterInit ?? Task.FromResult<IExporter?>(null),
             _toast.Show,
             () => _captureAvailable);
 
@@ -145,18 +145,7 @@ public partial class App : Application
 
     private void StartBackgroundInitialization()
     {
-        _ = Task.Run(() =>
-        {
-            var exporter = CreateExporter();
-            try
-            {
-                Dispatcher.Invoke(() => _exporter = exporter);
-            }
-            catch
-            {
-                // The app may be shutting down.
-            }
-        });
+        _exporterInit = Task.Run(CreateExporter);
 
         _ = Task.Run(() =>
         {
@@ -204,9 +193,9 @@ public partial class App : Application
         try
         {
             var runner = new SystemProcessRunner();
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            // No timeout: the probe runs off the UI thread and antivirus can stall ffmpeg.exe for minutes.
             var caps = FfmpegProbe
-                .ProbeAsync(path, runner, timeout.Token)
+                .ProbeAsync(path, runner, CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();
 
