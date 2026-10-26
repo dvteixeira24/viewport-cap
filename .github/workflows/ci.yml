@@ -16,3 +16,4 @@ jobs:
       - run: dotnet restore ViewportCap.sln
       - run: dotnet build ViewportCap.sln -c Release --no-restore
       - run: dotnet test ViewportCap.sln -c Release --no-build --filter "Category!=Integration"
+      - run: powershell -ExecutionPolicy Bypass -File tools/tests/publish.Tests.ps1

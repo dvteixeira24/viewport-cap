@@ -27,6 +27,8 @@ The app starts in the tray. Open **Settings...** to change the hotkey, output fo
 
 Temporary recordings are deleted on discard, after successful export, and after seven days at startup.
 
+Exiting during a capture or export waits for cancellation and file cleanup before closing. If the recorder cannot stop, the app keeps the temporary recording and reports the error so you can retry Exit.
+
 ## FFmpeg and publish
 
 MP4 recording works without FFmpeg. GIF/WebM export and MP4 trimming require `ffmpeg.exe`. Fetch and publish with:

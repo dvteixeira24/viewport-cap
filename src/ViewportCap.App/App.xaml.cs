@@ -25,6 +25,8 @@ public partial class App : Application
     private ToastService? _toast;
     private Task<IExporter?>? _exporterInit;
     private volatile bool _captureAvailable;
+    private readonly CancellationTokenSource _lifetime = new();
+    private bool _exiting;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -104,25 +106,7 @@ public partial class App : Application
                 FileLog.Error("Could not update Start with Windows.", ex);
             }
         };
-        _tray.ExitRequested += () =>
-        {
-            if (_flow is { IsIdle: false })
-            {
-                if (MessageBox.Show(
-                        "A capture is in progress. Exit anyway?",
-                        "viewport-cap",
-                        MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    _flow.Cancel();
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            Shutdown();
-        };
+        _tray.ExitRequested += async () => await ExitAsync();
 
         if (!_settings.HasShownFirstRunTip)
         {
@@ -137,6 +121,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _flow?.Cancel();
+        _lifetime.Cancel();
         _tray?.Dispose();
         _hotkey?.Dispose();
         _single?.Dispose();
@@ -145,7 +130,7 @@ public partial class App : Application
 
     private void StartBackgroundInitialization()
     {
-        _exporterInit = Task.Run(CreateExporter);
+        _exporterInit = Task.Run(() => CreateExporter(_lifetime.Token));
 
         _ = Task.Run(() =>
         {
@@ -181,7 +166,7 @@ public partial class App : Application
         });
     }
 
-    private static IExporter? CreateExporter()
+    private static IExporter? CreateExporter(CancellationToken cancellationToken)
     {
         var path = FfmpegLocator.Find();
         if (path is null)
@@ -197,7 +182,7 @@ public partial class App : Application
             var runner = new SystemProcessRunner();
             // No timeout: the probe runs off the UI thread and antivirus can stall ffmpeg.exe for minutes.
             var caps = FfmpegProbe
-                .ProbeAsync(path, runner, CancellationToken.None)
+                .ProbeAsync(path, runner, cancellationToken)
                 .GetAwaiter()
                 .GetResult();
 
@@ -212,11 +197,35 @@ public partial class App : Application
 
     private void OnCapture()
     {
+        if (_exiting) return;
         _flow?.HandleHotkey();
+    }
+
+    private async Task ExitAsync()
+    {
+        if (_exiting) return;
+        if (_flow is { IsIdle: false } && MessageBox.Show(
+                "A capture is in progress. Exit anyway?", "viewport-cap", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            return;
+        _exiting = true;
+        try
+        {
+            _lifetime.Cancel();
+            if (_flow != null) await _flow.ShutdownAsync();
+            if (_exporterInit != null) await _exporterInit;
+            Shutdown();
+        }
+        catch (Exception ex)
+        {
+            _exiting = false;
+            FileLog.Error("Shutdown cleanup failed.", ex);
+            MessageBox.Show("Could not finish cleanup. Please try Exit again.\n\n" + ex.Message, "viewport-cap");
+        }
     }
 
     private void ShowSettings()
     {
+        if (_exiting) return;
         if (_flow is { IsIdle: false })
         {
             _tray?.ShowBalloon("viewport-cap", "A capture is already in progress.");

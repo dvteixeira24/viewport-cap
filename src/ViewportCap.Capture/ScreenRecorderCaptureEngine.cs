@@ -15,7 +15,19 @@ public sealed class ScreenRecorderCaptureEngine:ICaptureEngine
  public async Task<CaptureResult> StopAsync(CancellationToken cancellationToken){TaskCompletionSource<CaptureResult> c;lock(_gate){if(_recorder==null||_completion==null)throw new InvalidOperationException("No recording is active.");c=_completion;_stopwatch?.Stop();try{_recorder.Stop();}catch(Exception ex){c.TrySetException(new CaptureException("Could not stop the recording.",ex));}}
   // shortcut: finalisation gets 10 minutes, far past normal muxing; beyond that the caller reviews the file while the recorder finishes in the background.
   try{var result=await c.Task.WaitAsync(TimeSpan.FromMinutes(10),cancellationToken);DisposeRecorder();return result;}catch{DisposeWhenFinalized(c);throw;}}
- public async Task CancelAsync(bool deleteFile=true){string? path;TaskCompletionSource<CaptureResult>? c;lock(_gate){path=_outputPath;c=_completion;try{_recorder?.Stop();}catch{}}if(c!=null){try{await c.Task.WaitAsync(TimeSpan.FromSeconds(5));}catch{}DisposeWhenFinalized(c);}else DisposeRecorder();if(deleteFile&&!string.IsNullOrWhiteSpace(path)&&File.Exists(path)){try{File.Delete(path);}catch{}}}
+ public async Task CancelAsync(bool deleteFile=true)
+ {
+  string? path;TaskCompletionSource<CaptureResult>? completion;
+  lock(_gate)
+  {
+   path=_outputPath;completion=_completion;
+   try{if(completion?.Task.IsCompleted!=true)_recorder?.Stop();}
+   catch(Exception ex){throw new CaptureException("Could not stop the recording. The temporary file was kept; try Exit again.",ex);}
+  }
+  if(completion!=null){try{await completion.Task;}catch{}}
+  DisposeRecorder();
+  if(deleteFile&&!string.IsNullOrWhiteSpace(path)&&File.Exists(path)){try{File.Delete(path);}catch{}}
+ }
  // The recorder may still be writing the file trailer; disposing now corrupts it, so wait for its completion event.
  private void DisposeWhenFinalized(TaskCompletionSource<CaptureResult> completion){if(completion.Task.IsCompleted){DisposeRecorder();return;}_=completion.Task.ContinueWith(_=>DisposeRecorder(),TaskScheduler.Default);}
  private void OnRecordingComplete(object? sender,RecordingCompleteEventArgs e){var r=new CaptureResult(e.FilePath??_outputPath??string.Empty,_hasAudio,_stopwatch?.Elapsed??TimeSpan.Zero,_width,_height);_completion?.TrySetResult(r);}

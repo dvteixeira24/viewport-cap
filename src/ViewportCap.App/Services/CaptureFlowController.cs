@@ -23,6 +23,8 @@ public sealed class CaptureFlowController
     private TaskCompletionSource<bool>? _stop;
     private RecordingHudWindow? _hud;
     private ReviewWindow? _review;
+    private Task _captureTask = Task.CompletedTask;
+    private bool _shuttingDown;
 
     public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, Func<Task<IExporter?>> exporterProvider, Action<string> showToast, Func<bool> isAvailable)
     {
@@ -49,7 +51,13 @@ public sealed class CaptureFlowController
             StartCapture();
     }
 
-    public async void StartCapture()
+    public void StartCapture()
+    {
+        if (_shuttingDown || !IsIdle) return;
+        _captureTask = RunCaptureAsync();
+    }
+
+    private async Task RunCaptureAsync()
     {
         if (!IsIdle)
             return;
@@ -61,6 +69,7 @@ public sealed class CaptureFlowController
 
         _state.TransitionTo(RecordingState.Selecting);
         _cts = new CancellationTokenSource();
+        string? recordingPath = null;
         try
         {
             var region = await _selector.SelectAsync(_cts.Token);
@@ -87,7 +96,9 @@ public sealed class CaptureFlowController
                         FileLog.Error("Could not save the audio mode.", ex);
                     }
                 });
-                var start = await countdown.RunAsync();
+                bool start;
+                try { start = await countdown.RunAsync().WaitAsync(_cts.Token); }
+                finally { countdown.Close(); }
                 audio = countdown.AudioMode;
                 if (!start)
                 {
@@ -99,10 +110,11 @@ public sealed class CaptureFlowController
             _state.TransitionTo(RecordingState.Recording);
             Directory.CreateDirectory(AppPaths.RecordingsDirectory);
             var path = Path.Combine(AppPaths.RecordingsDirectory, $"{Guid.NewGuid():N}.mp4");
+            recordingPath = path;
             CapturePreflight.EnsureDiskSpace(path);
+            _stop = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await _capture.StartAsync(new CaptureRequest(region.Value, path, audio, settings.MicrophoneDeviceName, settings.SystemAudioDeviceName), _cts.Token);
 
-            _stop = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _hud = new RecordingHudWindow(region.Value, audio);
             _hud.StopRequested += () => _stop?.TrySetResult(true);
             _hud.CancelRequested += () => _stop?.TrySetResult(false);
@@ -178,12 +190,14 @@ public sealed class CaptureFlowController
             }
 
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
+            _cts.Token.ThrowIfCancellationRequested();
             _state.TransitionTo(RecordingState.Reviewing);
             // Cap the wait so a hung probe cannot keep Review closed; the probe keeps running in the background.
             var exporterInit = _exporterProvider();
-            var exporter = await Task.WhenAny(exporterInit, Task.Delay(TimeSpan.FromSeconds(30))) == exporterInit
-                ? await exporterInit
-                : null;
+            IExporter? exporter;
+            try { exporter = await exporterInit.WaitAsync(TimeSpan.FromSeconds(30), _cts.Token); }
+            catch (TimeoutException) { exporter = null; }
+            _cts.Token.ThrowIfCancellationRequested();
             var review = new ReviewWindow(result, settings, exporter, _showToast);
             _review = review;
             review.Closed += (_, _) =>
@@ -196,13 +210,18 @@ public sealed class CaptureFlowController
         }
         catch (OperationCanceledException)
         {
-            try { await _capture.CancelAsync(); } catch { }
+            try
+            {
+                await _capture.CancelAsync();
+                if (recordingPath != null) File.Delete(recordingPath);
+            }
+            catch (Exception ex) { FileLog.Error("Could not clean up the cancelled recording; keeping its file.", ex); }
             GoIdle();
         }
         catch (Exception ex)
         {
             FileLog.Error("Capture failed.", ex);
-            MessageBox.Show($"Capture failed:\n\n{ex.Message}", "viewport-cap");
+            if (!_shuttingDown) MessageBox.Show($"Capture failed:\n\n{ex.Message}", "viewport-cap");
             try { await _capture.CancelAsync(deleteFile: false); } catch { }
             GoIdle();
         }
@@ -213,6 +232,16 @@ public sealed class CaptureFlowController
         _cts?.Cancel();
         _stop?.TrySetResult(false);
         _review?.CancelExport();
+    }
+
+    public async Task ShutdownAsync()
+    {
+        _shuttingDown = true;
+        Cancel();
+        await _captureTask;
+        // A timed-out Stop can leave the native writer running behind Review.
+        await _capture.CancelAsync(deleteFile: false);
+        if (_review is { } review) await review.CloseForShutdownAsync();
     }
 
     // MP4 headers alone are about 1 KB; a smaller file is not playable and not worth reviewing.
