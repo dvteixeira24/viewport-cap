@@ -3,7 +3,7 @@ namespace ViewportCap.App.Windows;
 public partial class RegionOverlayWindow:Window
 {
  private readonly MonitorDescriptor _monitor;private bool _dragging;private Point _start;private DispatcherTimer? _hintTimer;public event Action<CaptureRegion>? SelectionCompleted;public event Action? Cancelled;public MonitorDescriptor Monitor=>_monitor;
- public RegionOverlayWindow(MonitorDescriptor monitor){InitializeComponent();_monitor=monitor;var b=DisplayService.GetWindowBounds(monitor);Left=b.Left;Top=b.Top;Width=b.Width;Height=b.Height;SourceInitialized+=(_,_)=>WindowAffinity.ExcludeFromCapture(this);Loaded+=(_,_)=>UpdateShades(default,false);SizeChanged+=(_,_)=>UpdateShades(default,false);}
+ public RegionOverlayWindow(MonitorDescriptor monitor){InitializeComponent();_monitor=monitor;var b=DisplayService.GetWindowBounds(monitor);Left=b.Left;Top=b.Top;Width=b.Width;Height=b.Height;SourceInitialized+=(_,_)=>{DisplayService.SetPhysicalBounds(this,monitor.Left,monitor.Top,monitor.Width,monitor.Height);WindowAffinity.ExcludeFromCapture(this);};Loaded+=(_,_)=>UpdateShades(default,false);SizeChanged+=(_,_)=>UpdateShades(default,false);}
  public void EnableInput(bool enabled){IsHitTestVisible=enabled;Cursor=enabled?Cursors.Cross:Cursors.Arrow;if(enabled){Activate();Focus();}}
  private void Window_MouseLeftButtonDown(object s,MouseButtonEventArgs e){if(!IsHitTestVisible)return;_dragging=true;_start=e.GetPosition(RootCanvas);CaptureMouse();UpdateSelection(_start,_start);e.Handled=true;}
  private void Window_MouseMove(object s,MouseEventArgs e){if(_dragging)UpdateSelection(_start,e.GetPosition(RootCanvas));}
