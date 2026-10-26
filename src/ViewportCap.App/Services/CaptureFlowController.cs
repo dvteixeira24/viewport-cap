@@ -14,8 +14,8 @@ public sealed class CaptureFlowController
     private readonly Func<AppSettings> _getSettings;
     private readonly ISettingsStore _store;
     private readonly ICaptureEngine _capture;
-    private readonly bool _available;
-    private readonly IExporter? _exporter;
+    private readonly Func<bool> _isAvailable;
+    private readonly Func<IExporter?> _exporterProvider;
     private readonly Action<string> _showToast;
     private readonly RecordingStateMachine _state = new();
     private readonly RegionSelector _selector = new();
@@ -24,14 +24,14 @@ public sealed class CaptureFlowController
     private RecordingHudWindow? _hud;
     private ReviewWindow? _review;
 
-    public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, IExporter? exporter, Action<string> showToast, bool captureAvailable)
+    public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, Func<IExporter?> exporterProvider, Action<string> showToast, Func<bool> isAvailable)
     {
         _getSettings = getSettings;
         _store = store;
         _capture = capture;
-        _available = captureAvailable;
-        _exporter = exporter;
+        _exporterProvider = exporterProvider;
         _showToast = showToast;
+        _isAvailable = isAvailable;
         _capture.Failed += (_, args) => _stop?.TrySetException(new CaptureException(args.Error));
     }
 
@@ -53,7 +53,7 @@ public sealed class CaptureFlowController
     {
         if (!IsIdle)
             return;
-        if (!_available)
+        if (!_isAvailable())
         {
             MessageBox.Show("Screen capture is unavailable. Check the VC++ runtime and Media Foundation.", "viewport-cap", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
@@ -167,7 +167,7 @@ public sealed class CaptureFlowController
             var result = await _capture.StopAsync(CancellationToken.None);
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
             _state.TransitionTo(RecordingState.Reviewing);
-            var review = new ReviewWindow(result, settings, _exporter, _showToast);
+            var review = new ReviewWindow(result, settings, _exporterProvider(), _showToast);
             _review = review;
             review.Closed += (_, _) =>
             {
