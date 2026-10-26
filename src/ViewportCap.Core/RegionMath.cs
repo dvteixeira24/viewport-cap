@@ -13,6 +13,8 @@ public static class RegionMath
         var bottom = monitor.Top + (int)Math.Round(local.Bottom * scale, MidpointRounding.AwayFromZero);
         left = Math.Clamp(left, monitor.Left, monitorRight); top = Math.Clamp(top, monitor.Top, monitorBottom);
         right = Math.Clamp(right, monitor.Left, monitorRight); bottom = Math.Clamp(bottom, monitor.Top, monitorBottom);
-        return new CaptureRegion(monitor.DeviceName, monitor.Left, monitor.Top, left, top, Math.Max(0, right - left), Math.Max(0, bottom - top), monitor.Dpi);
+        // H.264/CaptureApi need even dimensions; some odd sizes make the recorder fail with "Unspecified error".
+        var width = Math.Max(0, right - left) & ~1; var height = Math.Max(0, bottom - top) & ~1;
+        return new CaptureRegion(monitor.DeviceName, monitor.Left, monitor.Top, left, top, width, height, monitor.Dpi);
     }
 }
