@@ -15,7 +15,7 @@ public sealed class CaptureFlowController
     private readonly ISettingsStore _store;
     private readonly ICaptureEngine _capture;
     private readonly Func<bool> _isAvailable;
-    private readonly Func<IExporter?> _exporterProvider;
+    private readonly Func<Task<IExporter?>> _exporterProvider;
     private readonly Action<string> _showToast;
     private readonly RecordingStateMachine _state = new();
     private readonly RegionSelector _selector = new();
@@ -24,7 +24,7 @@ public sealed class CaptureFlowController
     private RecordingHudWindow? _hud;
     private ReviewWindow? _review;
 
-    public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, Func<IExporter?> exporterProvider, Action<string> showToast, Func<bool> isAvailable)
+    public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, Func<Task<IExporter?>> exporterProvider, Action<string> showToast, Func<bool> isAvailable)
     {
         _getSettings = getSettings;
         _store = store;
@@ -167,7 +167,8 @@ public sealed class CaptureFlowController
             var result = await _capture.StopAsync(CancellationToken.None);
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
             _state.TransitionTo(RecordingState.Reviewing);
-            var review = new ReviewWindow(result, settings, _exporterProvider(), _showToast);
+            var exporter = await _exporterProvider();
+            var review = new ReviewWindow(result, settings, exporter, _showToast);
             _review = review;
             review.Closed += (_, _) =>
             {
