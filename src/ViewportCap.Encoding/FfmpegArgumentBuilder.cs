@@ -7,7 +7,7 @@ public static class FfmpegArgumentBuilder
  {
   if(s.Format==OutputFormat.Mp4&&!caps.CanEncodeH264)throw new InvalidOperationException("No H.264 encoder is available in FFmpeg.");if(s.Format==OutputFormat.WebM&&!caps.HasVp9)throw new InvalidOperationException("libvpx-vp9 is not available in FFmpeg.");
   var a=new List<string>{"-y","-hide_banner","-nostdin","-i",s.SourcePath,"-ss",FormatTime(s.TrimStart),"-t",FormatTime(s.TrimDuration)};var audio=s.Format!=OutputFormat.Gif&&s.HasAudio&&!s.MuteAudio;
-  a.Add("-map");a.Add("0:v:0");if(audio){a.Add("-map");a.Add("0:a:0?");}else a.Add("-an");var (w,h)=Size(s.SourceWidth,s.SourceHeight,s.Scale);
+  if(s.Format!=OutputFormat.Gif){a.Add("-map");a.Add("0:v:0");}if(audio){a.Add("-map");a.Add("0:a:0?");}else a.Add("-an");var (w,h)=Size(s.SourceWidth,s.SourceHeight,s.Scale);
   switch(s.Format){case OutputFormat.Mp4:AddMp4(a,s,caps,w,h,audio);break;case OutputFormat.WebM:AddWebm(a,s,w,h,audio);break;case OutputFormat.Gif:AddGif(a,s,w,h);break;default:throw new ArgumentOutOfRangeException(nameof(s));}
   a.AddRange(new[]{"-progress","pipe:1","-nostats",outputPath});return a;
  }
