@@ -174,7 +174,6 @@ public sealed class CaptureFlowController
             {
                 // Finalisation is still running; the recorder keeps writing and the file is kept, so review it instead of failing.
                 FileLog.Error("Recording finalisation is slow; keeping the file for review.", ex);
-                _showToast("Finalising is taking longer. The recording is in Review.");
                 result = new CaptureResult(path, audio != AudioMode.Off, stopRequestedAt - startedAt, region.Value.Width, region.Value.Height);
             }
 
