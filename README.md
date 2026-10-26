@@ -45,6 +45,7 @@ That zip is the release: unzip it anywhere and run `viewport-cap.exe`; `ffmpeg.e
 ## Limitations
 
 - SDR only; selections cannot span monitors; no pause/resume or annotations.
+- Capture uses software H.264 encoding to avoid hardware-encoder hangs on Stop; large regions can use more CPU.
 - Protected/DRM content may record black. No installer, auto-update, or code signing.
 
 ## License

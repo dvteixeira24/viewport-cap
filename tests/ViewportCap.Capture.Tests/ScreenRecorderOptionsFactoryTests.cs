@@ -7,6 +7,15 @@ namespace ViewportCap.Capture.Tests;
 public sealed class ScreenRecorderOptionsFactoryTests
 {
     [Fact]
+    public void Create_UsesSoftwareEncodingSoHardwareFinalizationCannotHangStop()
+    {
+        var region=new CaptureRegion(@"\\.\DISPLAY1",0,0,0,0,1016,562,96);
+        var options=ScreenRecorderOptionsFactory.Create(new CaptureRequest(region,"out.mp4",AudioMode.Off,null,null));
+        Assert.False(options.VideoEncoderOptions.IsHardwareEncodingEnabled);
+        Assert.True(options.VideoEncoderOptions.IsFragmentedMp4Enabled);
+    }
+
+    [Fact]
     public void Create_CropsTheRecordingToTheSelectedRegion()
     {
         var region = new CaptureRegion(@"\\.\DISPLAY1", 0, 0, 100, 100, 400, 300, 96);
