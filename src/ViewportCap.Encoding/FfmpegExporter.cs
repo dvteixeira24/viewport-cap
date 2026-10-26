@@ -7,10 +7,10 @@ public sealed class FfmpegExporter:IExporter
  public async Task<ExportResult> ExportAsync(ExportPlan plan,IProgress<double>? progress,CancellationToken cancellationToken)
  {
   var dir=Path.GetDirectoryName(plan.OutputPath);if(string.IsNullOrWhiteSpace(dir))throw new ExportException("The output path has no directory.");Directory.CreateDirectory(dir);if(!File.Exists(plan.Settings.SourcePath))throw new ExportException("The temporary recording is missing.");
-  if(plan.CopySource){File.Copy(plan.Settings.SourcePath,plan.OutputPath,true);return new(plan.OutputPath);}
-  var ext=Path.GetExtension(plan.OutputPath);var partial=Path.Combine(dir,$"{Path.GetFileNameWithoutExtension(plan.OutputPath)}.partial{ext}");if(File.Exists(partial))File.Delete(partial);var args=FfmpegArgumentBuilder.Build(plan.Settings,partial,_capabilities);var parser=new FfmpegProgressParser(plan.Settings.TrimDuration.TotalSeconds);
+  if(plan.CopySource){ExportFiles.CopyIntoPlace(plan.Settings.SourcePath,plan.OutputPath);return new(plan.OutputPath);}
+  var partial=ExportFiles.PartialPath(plan.OutputPath);if(File.Exists(partial))File.Delete(partial);var args=FfmpegArgumentBuilder.Build(plan.Settings,partial,_capabilities);var parser=new FfmpegProgressParser(plan.Settings.TrimDuration.TotalSeconds);
   try{var result=await _runner.RunAsync(_ffmpegPath,args,line=>{parser.Feed(line);if(parser.Percent is double p)progress?.Report(p);},null,cancellationToken);if(result.ExitCode!=0)throw new ExportException($"FFmpeg failed: {Tail(result.StandardError)}");if(!File.Exists(partial))throw new ExportException("FFmpeg did not produce an output file.");File.Move(partial,plan.OutputPath,true);return new(plan.OutputPath);}
-  catch{if(File.Exists(partial))File.Delete(partial);throw;}
+  catch{try{if(File.Exists(partial))File.Delete(partial);}catch{}throw;}
  }
  private static string Tail(string text)=>text.Length<=2000?text:text[^2000..];
 }
