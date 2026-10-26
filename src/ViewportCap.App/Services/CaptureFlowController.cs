@@ -167,7 +167,11 @@ public sealed class CaptureFlowController
             var result = await _capture.StopAsync(CancellationToken.None);
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
             _state.TransitionTo(RecordingState.Reviewing);
-            var exporter = await _exporterProvider();
+            // Cap the wait so a hung probe cannot keep Review closed; the probe keeps running in the background.
+            var exporterInit = _exporterProvider();
+            var exporter = await Task.WhenAny(exporterInit, Task.Delay(TimeSpan.FromSeconds(30))) == exporterInit
+                ? await exporterInit
+                : null;
             var review = new ReviewWindow(result, settings, exporter, _showToast);
             _review = review;
             review.Closed += (_, _) =>
