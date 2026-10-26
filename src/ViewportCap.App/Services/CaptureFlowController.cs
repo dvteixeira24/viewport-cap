@@ -164,7 +164,20 @@ public sealed class CaptureFlowController
                 return;
             }
 
-            var result = await _capture.StopAsync(CancellationToken.None);
+            var stopRequestedAt = DateTime.UtcNow;
+            CaptureResult result;
+            try
+            {
+                result = await _capture.StopAsync(CancellationToken.None);
+            }
+            catch (TimeoutException ex) when (HasPlausibleFile(path))
+            {
+                // Finalisation is still running; the recorder keeps writing and the file is kept, so review it instead of failing.
+                FileLog.Error("Recording finalisation is slow; keeping the file for review.", ex);
+                _showToast("Finalising is taking longer. The recording is in Review.");
+                result = new CaptureResult(path, audio != AudioMode.Off, stopRequestedAt - startedAt, region.Value.Width, region.Value.Height);
+            }
+
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
             _state.TransitionTo(RecordingState.Reviewing);
             var review = new ReviewWindow(result, settings, _exporterProvider(), _showToast);
@@ -196,6 +209,20 @@ public sealed class CaptureFlowController
         _cts?.Cancel();
         _stop?.TrySetResult(false);
         _review?.CancelExport();
+    }
+
+    // MP4 headers alone are about 1 KB; a smaller file is not playable and not worth reviewing.
+    private static bool HasPlausibleFile(string path)
+    {
+        try
+        {
+            var file = new FileInfo(path);
+            return file.Exists && file.Length >= 1024;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void GoIdle()
