@@ -1,9 +1,60 @@
-<Window x:Class="ViewportCap.App.Windows.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="viewport-cap settings" Width="580" Height="620" MinWidth="520" MinHeight="520" WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Icon="pack://application:,,,/Assets/app.ico">
-  <Grid Margin="18"><Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions><ScrollViewer><StackPanel>
- <TextBlock Text="viewport-cap" FontSize="24" FontWeight="SemiBold"/><TextBlock Text="Capture a region from anywhere." Foreground="{StaticResource MutedBrush}" Margin="0,2,0,18"/>
- <TextBlock Text="Global hotkey"/><TextBox x:Name="HotkeyBox" IsReadOnly="True" PreviewKeyDown="HotkeyBox_PreviewKeyDown" Margin="0,4,0,14"/>
- <TextBlock Text="Output folder"/><Grid Margin="0,4,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="OutputFolderBox"/><Button Grid.Column="1" Content="Browse..." Click="Browse_Click"/></Grid>
- <TextBlock Text="Countdown (seconds)"/><ComboBox x:Name="CountdownBox" Margin="0,4,0,14"/><TextBlock Text="Default export format"/><ComboBox x:Name="FormatBox" Margin="0,4,0,14"/>
-  <TextBlock Text="Audio at capture time"/><ComboBox x:Name="AudioModeBox" Margin="0,4,0,14"/><TextBlock Text="Microphone"/><ComboBox x:Name="MicrophoneBox" Margin="0,4,0,14"/><TextBlock Text="System audio output"/><ComboBox x:Name="SystemAudioBox" Margin="0,4,0,14"/><CheckBox x:Name="StartWithWindowsBox" Content="Start with Windows" Margin="0,4,0,16"/><TextBlock x:Name="VersionText" Foreground="{StaticResource MutedBrush}"/>
-  </StackPanel></ScrollViewer><StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0"><Button Content="Open logs" Click="OpenLogs_Click"/><Button Content="Cancel" Click="Cancel_Click"/><Button Content="Save" Click="Save_Click"/></StackPanel></Grid>
+<Window x:Class="ViewportCap.App.Windows.SettingsWindow" Style="{DynamicResource {x:Type Window}}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="viewport-cap settings" Width="680" Height="800" MinWidth="560" MinHeight="580"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Icon="pack://application:,,,/Assets/app.ico">
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Border Padding="28,24,28,20" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+      <StackPanel>
+        <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold"/>
+        <TextBlock Text="viewport-cap · Capture a region from anywhere." Style="{DynamicResource SecondaryText}" Margin="0,6,0,0"/>
+      </StackPanel>
+    </Border>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="28,24">
+        <TextBlock Text="Capture" Style="{DynamicResource SectionHeading}"/>
+        <Grid Margin="0,0,0,16">
+          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="20"/><ColumnDefinition/></Grid.ColumnDefinitions>
+          <StackPanel>
+            <Label Content="Global _hotkey" Target="{Binding ElementName=HotkeyBox}"/>
+            <TextBox x:Name="HotkeyBox" IsReadOnly="True" PreviewKeyDown="HotkeyBox_PreviewKeyDown" ToolTip="Focus this field and press a new shortcut."/>
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <Label Content="_Countdown (seconds)" Target="{Binding ElementName=CountdownBox}"/>
+            <ComboBox x:Name="CountdownBox"/>
+          </StackPanel>
+        </Grid>
+        <Label Content="_Output folder" Target="{Binding ElementName=OutputFolderBox}"/>
+        <Grid Margin="0,0,0,16">
+          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBox x:Name="OutputFolderBox"/>
+          <Button Grid.Column="1" Content="_Browse…" Click="Browse_Click" Margin="8,0,0,0"/>
+        </Grid>
+        <Label Content="Default export _format" Target="{Binding ElementName=FormatBox}"/>
+        <ComboBox x:Name="FormatBox"/>
+        <Border Height="1" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" Margin="0,24,0,24"/>
+        <TextBlock Text="Audio" Style="{DynamicResource SectionHeading}"/>
+        <Label Content="Audio at capture _time" Target="{Binding ElementName=AudioModeBox}"/>
+        <ComboBox x:Name="AudioModeBox" Margin="0,0,0,16"/>
+        <Label Content="_Microphone" Target="{Binding ElementName=MicrophoneBox}"/>
+        <ComboBox x:Name="MicrophoneBox" Margin="0,0,0,16"/>
+        <Label Content="System audio _output" Target="{Binding ElementName=SystemAudioBox}"/>
+        <ComboBox x:Name="SystemAudioBox"/>
+        <Border Height="1" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" Margin="0,24,0,24"/>
+        <TextBlock Text="Startup" Style="{DynamicResource SectionHeading}" Margin="0,0,0,8"/>
+        <CheckBox x:Name="StartWithWindowsBox" Content="Start with _Windows"/>
+        <TextBlock x:Name="VersionText" Style="{DynamicResource SecondaryText}" Margin="0,16,0,0" FontSize="12"/>
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" Padding="28,16" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+      <Grid>
+        <Button Content="Open _logs" Click="OpenLogs_Click" HorizontalAlignment="Left"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button Content="Cancel" Click="Cancel_Click" IsCancel="True"/>
+          <Button Content="_Save" Click="Save_Click" Style="{DynamicResource PrimaryButton}" MinWidth="96" Margin="8,0,0,0"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
 </Window>

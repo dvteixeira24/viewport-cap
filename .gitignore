@@ -10,3 +10,4 @@ dist/
 tools/ffmpeg/
 *.zip
 *.log
+.impeccable/review/

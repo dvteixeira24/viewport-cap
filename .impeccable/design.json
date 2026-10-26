@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T00:00:00Z",
+  "title": "Design System: viewport-cap",
+  "extensions": {
+    "shadows": [],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Browser approximation of the native WPF primary action; App.xaml is authoritative.",
+      "html": "<button class=\"ds-primary\">Save</button>",
+      "css": ".ds-primary{font:14px 'Segoe UI',sans-serif;min-height:36px;min-width:80px;padding:7px 16px;background:Highlight;color:HighlightText;border:1px solid Highlight;border-radius:4px}.ds-primary:hover{opacity:.8}.ds-primary:active{opacity:.6}.ds-primary:focus-visible{outline:2px solid CanvasText;outline-offset:2px}.ds-primary:disabled{opacity:.5}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Browser approximation of the native WPF secondary action.",
+      "html": "<button class=\"ds-secondary\">Cancel</button>",
+      "css": ".ds-secondary{font:14px 'Segoe UI',sans-serif;min-height:36px;min-width:80px;padding:7px 16px;background:Canvas;color:CanvasText;border:1px solid ActiveBorder;border-radius:4px}.ds-secondary:hover{opacity:.8}.ds-secondary:active{opacity:.6}.ds-secondary:focus-visible{outline:2px solid Highlight;outline-offset:2px}.ds-secondary:disabled{opacity:.5}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "description": "Browser approximation of a native labeled text field.",
+      "html": "<label class=\"ds-field\">Output folder<input value=\"Videos\\ViewportCap\"></label>",
+      "css": ".ds-field{display:grid;gap:6px;font:14px 'Segoe UI',sans-serif;color:CanvasText}.ds-field input{font:inherit;min-height:36px;padding:7px 10px;background:Canvas;color:CanvasText;border:1px solid ActiveBorder}.ds-field input:focus-visible{outline:2px solid Highlight}.ds-field input:disabled{opacity:.5}"
+    },
+    {
+      "name": "Format selector",
+      "kind": "input",
+      "description": "Browser approximation; the WPF template preserves native ComboBox keyboard interaction.",
+      "html": "<label class=\"ds-select\">Format<select><option>MP4</option><option>WebM</option><option>GIF</option></select></label>",
+      "css": ".ds-select{display:grid;gap:6px;font:14px 'Segoe UI',sans-serif;color:CanvasText}.ds-select select{font:inherit;min-height:36px;padding:7px 10px;background:Canvas;color:CanvasText;border:1px solid ActiveBorder;border-radius:4px}.ds-select select:hover{border-color:Highlight}.ds-select select:focus-visible{outline:2px solid Highlight}.ds-select select:disabled{opacity:.5}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Familiar Windows utility",
+    "overview": "The user requested a familiar Windows appearance across every window. The interface uses native WPF controls, restrained separators, readable grouping, and clear completion actions. Desktop operation matters more than decorative identity.",
+    "keyCharacteristics": [
+      "System-colored surfaces and selection, rather than a fixed dark palette.",
+      "Native window management, keyboard navigation, and accessible field labels.",
+      "Consistent action placement and compact floating overlays."
+    ],
+    "rules": [
+      { "name": "The System Pair Rule", "body": "Pair Window with WindowText and Highlight with HighlightText. Do not restore fixed light text over native light dropdowns.", "section": "colors" }
+    ],
+    "dos": [
+      "Do reuse the application styles and system color pairs.",
+      "Do preserve named controls, event handlers, keyboard operation, and existing recording/export safeguards.",
+      "Do check constrained window sizes and long file/device names."
+    ],
+    "donts": [
+      "Don't introduce a fixed dark foreground palette into native light controls.",
+      "Don't add decorative icons or imagery to task-focused windows."
+    ]
+  }
+}
