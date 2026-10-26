@@ -85,8 +85,11 @@ public partial class SettingsWindow : Window
 
     private void HotkeyBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        e.Handled = true;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (key is Key.Tab or Key.Escape)
+            return;
+
+        e.Handled = true;
         if (key is Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin)
             return;
 
@@ -125,10 +128,22 @@ public partial class SettingsWindow : Window
             return;
         }
 
+        string outputFolder;
+        try
+        {
+            outputFolder = Path.GetFullPath(OutputFolderBox.Text.Trim());
+        }
+        catch (Exception ex)
+        {
+            FileLog.Error("Invalid output folder.", ex);
+            MessageBox.Show("Enter a valid output folder path.", "viewport-cap");
+            return;
+        }
+
         var updated = new AppSettings
         {
             Hotkey = hotkey.ToString(),
-            OutputFolder = OutputFolderBox.Text.Trim(),
+            OutputFolder = outputFolder,
             CountdownSeconds = CountdownBox.SelectedItem is int countdown ? countdown : 3,
             DefaultFormat = FormatBox.SelectedItem is OutputFormat format ? format : OutputFormat.Mp4,
             AudioMode = AudioModeBox.SelectedItem is AudioMode audio ? audio : AudioMode.Off,
