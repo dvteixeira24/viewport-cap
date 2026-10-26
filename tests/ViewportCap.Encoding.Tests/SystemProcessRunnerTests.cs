@@ -36,6 +36,20 @@ public sealed class SystemProcessRunnerTests
     }
 #pragma warning restore xUnit1031
 
+    [Fact]
+    public async Task RunAsync_CancellationKillsTheProcessAndThrows()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+        var runner = new SystemProcessRunner();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runner.RunAsync(
+            "cmd.exe",
+            new[] { "/c", "ping", "-n", "30", "127.0.0.1" },
+            null,
+            null,
+            cts.Token));
+    }
+
     private sealed class DroppingSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback callback, object? state)

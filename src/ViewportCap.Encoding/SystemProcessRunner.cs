@@ -40,6 +40,7 @@ public sealed class SystemProcessRunner : IProcessRunner
         catch (OperationCanceledException)
         {
             TryKill(process);
+            try { process.WaitForExit(2000); } catch { } // Let the killed process release its file handle before cleanup runs.
             throw;
         }
 
