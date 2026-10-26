@@ -26,4 +26,9 @@
     <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
   </ItemGroup>
 
+  <!-- A dev build sits beside no ffmpeg.exe; copy the fetched binary so export works there like in dist/publish. -->
+  <Target Name="CopyFfmpeg" AfterTargets="Build" Condition="Exists('$(MSBuildThisFileDirectory)..\..\tools\ffmpeg\ffmpeg.exe')">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\tools\ffmpeg\ffmpeg.exe" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>

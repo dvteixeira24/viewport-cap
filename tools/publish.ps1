@@ -4,6 +4,7 @@ $version=([xml](Get-Content (Join-Path $root 'Directory.Build.props'))).Project.
 dotnet test ViewportCap.sln -c $Configuration --filter "Category!=Integration"
 powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'fetch-ffmpeg.ps1')
 $publishDir=Join-Path $root 'dist\publish';$zipPath=Join-Path $root "dist\viewport-cap-$version-win-x64.zip";if(Test-Path $publishDir){Remove-Item $publishDir -Recurse -Force};if(Test-Path $zipPath){Remove-Item $zipPath -Force}
-dotnet publish src/ViewportCap.App/ViewportCap.App.csproj -c $Configuration -r win-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=true -o $publishDir
+dotnet publish src/ViewportCap.App/ViewportCap.App.csproj -c $Configuration -r win-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=true -p:SatelliteResourceLanguages=en -o $publishDir
+Remove-Item (Join-Path $publishDir '*.pdb') -Force
 Copy-Item (Join-Path $PSScriptRoot 'ffmpeg\ffmpeg.exe') (Join-Path $publishDir 'ffmpeg.exe') -Force;Copy-Item (Join-Path $root 'LICENSE') $publishDir -Force;Copy-Item (Join-Path $root 'THIRD-PARTY-NOTICES.md') $publishDir -Force;Copy-Item (Join-Path $root 'README.md') $publishDir -Force
 Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $zipPath -Force;Write-Host "Published $zipPath"

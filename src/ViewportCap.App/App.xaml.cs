@@ -186,9 +186,11 @@ public partial class App : Application
         var path = FfmpegLocator.Find();
         if (path is null)
         {
-            FileLog.Warn("ffmpeg.exe was not found. GIF/WebM export is disabled.");
+            FileLog.Warn("ffmpeg.exe was not found beside the app. GIF/WebM export and MP4 trimming are disabled.");
             return null;
         }
+
+        FileLog.Info($"FFmpeg: {path}");
 
         try
         {

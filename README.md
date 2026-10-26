@@ -38,6 +38,8 @@ powershell -ExecutionPolicy Bypass -File tools/publish.ps1
 
 The result is `dist/viewport-cap-<version>-win-x64.zip`. The fetch script verifies the pinned LGPL archive SHA-256.
 
+That zip is the release: unzip it anywhere and run `viewport-cap.exe`; `ffmpeg.exe` ships beside it. `dist/publish` is only the staging folder the zip is built from. A local `dotnet build` also gets `ffmpeg.exe` beside the app once `fetch-ffmpeg.ps1` has run.
+
 ## Limitations
 
 - SDR only; selections cannot span monitors; no pause/resume or annotations.
