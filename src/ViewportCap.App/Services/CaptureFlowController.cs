@@ -22,6 +22,7 @@ public sealed class CaptureFlowController
     private CancellationTokenSource? _cts;
     private TaskCompletionSource<bool>? _stop;
     private RecordingHudWindow? _hud;
+    private ReviewWindow? _review;
 
     public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, IExporter? exporter, Action<string> showToast, bool captureAvailable)
     {
@@ -160,8 +161,10 @@ public sealed class CaptureFlowController
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
             _state.TransitionTo(RecordingState.Reviewing);
             var review = new ReviewWindow(result, settings, _exporter, _showToast);
+            _review = review;
             review.Closed += (_, _) =>
             {
+                _review = null;
                 if (_state.State == RecordingState.Reviewing)
                     GoIdle();
             };
@@ -185,6 +188,7 @@ public sealed class CaptureFlowController
     {
         _cts?.Cancel();
         _stop?.TrySetResult(false);
+        _review?.CancelExport();
     }
 
     private void GoIdle()
