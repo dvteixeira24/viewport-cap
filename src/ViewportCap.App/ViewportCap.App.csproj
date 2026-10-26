@@ -12,6 +12,8 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>viewport-cap</AssemblyName>
     <RootNamespace>ViewportCap.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -19,6 +21,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
   </ItemGroup>
 
 </Project>
