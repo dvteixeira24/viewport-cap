@@ -1,0 +1,10 @@
+using System.Windows;using System.Windows.Input;using System.Windows.Threading;using ViewportCap.App.Services;using ViewportCap.Core;using KeyEventArgs=System.Windows.Input.KeyEventArgs;
+namespace ViewportCap.App.Windows;
+public partial class CountdownWindow:Window
+{
+ private readonly CaptureRegion _region;private readonly TaskCompletionSource<bool> _completion=new(TaskCreationOptions.RunContinuationsAsynchronously);private readonly DispatcherTimer _timer;private readonly Action<AudioMode>? _onAudioChanged;private int _remaining;private bool _completed;public AudioMode AudioMode{get;private set;}
+ public CountdownWindow(CaptureRegion region,int seconds,AudioMode mode,Action<AudioMode>? changed=null){InitializeComponent();_region=region;_remaining=Math.Max(1,seconds);AudioMode=mode;_onAudioChanged=changed;var p=DisplayService.GetNearbyPosition(region,Width,Height);Left=p.Left;Top=p.Top;SourceInitialized+=(_,_)=>WindowAffinity.ExcludeFromCapture(this);Closed+=(_,_)=>{if(!_completed){_completed=true;_timer.Stop();_completion.TrySetResult(false);}};UpdateText();_timer=new DispatcherTimer{Interval=TimeSpan.FromSeconds(1)};_timer.Tick+=(_,_)=>{if(--_remaining<=0)Complete(true);else UpdateText();};_timer.Start();}
+ public Task<bool> RunAsync(){Show();Activate();Focus();return _completion.Task;}private void UpdateText(){CountText.Text=_remaining.ToString();InfoText.Text=$"{_region.Width} x {_region.Height} · {AudioMode}";AudioButton.Content=$"Audio: {AudioMode}";}
+ private void Complete(bool start){if(_completed)return;_completed=true;_timer.Stop();_completion.TrySetResult(start);Close();}private void StartNow_Click(object s,RoutedEventArgs e)=>Complete(true);private void Cancel_Click(object s,RoutedEventArgs e)=>Complete(false);
+ private void Audio_Click(object s,RoutedEventArgs e){AudioMode=AudioMode switch{AudioMode.Off=>AudioMode.Microphone,AudioMode.Microphone=>AudioMode.System,AudioMode.System=>AudioMode.Both,_=>AudioMode.Off};UpdateText();_onAudioChanged?.Invoke(AudioMode);}private void Window_KeyDown(object s,KeyEventArgs e){if(e.Key==Key.Escape)Complete(false);}
+}
