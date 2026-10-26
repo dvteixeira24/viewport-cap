@@ -118,6 +118,14 @@ public partial class App : Application
         StartBackgroundInitialization();
     }
 
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        base.OnSessionEnding(e);
+        // Logoff or shutdown gives no chance to await cleanup; stop promptly without dialogs.
+        _flow?.Cancel();
+        _lifetime.Cancel();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         _flow?.Cancel();

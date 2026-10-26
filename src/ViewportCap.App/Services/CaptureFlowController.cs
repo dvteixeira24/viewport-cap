@@ -84,26 +84,27 @@ public sealed class CaptureFlowController
             var audio = settings.AudioMode;
             if (settings.CountdownSeconds > 0)
             {
-                var countdown = new CountdownWindow(region.Value, settings.CountdownSeconds, audio, mode =>
+                // Buffer the countdown choice; a cancelled countdown must not write settings.
+                var countdown = new CountdownWindow(region.Value, settings.CountdownSeconds, audio, mode => audio = mode);
+                bool start;
+                try { start = await countdown.RunAsync().WaitAsync(_cts.Token); }
+                finally { countdown.Close(); }
+                if (!start)
                 {
+                    GoIdle();
+                    return;
+                }
+                if (audio != settings.AudioMode)
+                {
+                    settings.AudioMode = audio;
                     try
                     {
-                        settings.AudioMode = mode;
                         _store.Save(settings);
                     }
                     catch (Exception ex)
                     {
                         FileLog.Error("Could not save the audio mode.", ex);
                     }
-                });
-                bool start;
-                try { start = await countdown.RunAsync().WaitAsync(_cts.Token); }
-                finally { countdown.Close(); }
-                audio = countdown.AudioMode;
-                if (!start)
-                {
-                    GoIdle();
-                    return;
                 }
             }
 

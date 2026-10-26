@@ -160,6 +160,35 @@ public sealed class CaptureFlowControllerTests
         () => new AppSettings { CountdownSeconds = countdown }, new MemorySettings(), engine,
         () => Task.FromResult<IExporter?>(null), _ => { }, () => true);
 
+    [Fact]
+    public Task CancellingCountdown_DoesNotSaveAudioChange() => StaTest.Run(async () =>
+    {
+        var store = new RecordingSettings();
+        var flow = new CaptureFlowController(() => new AppSettings { CountdownSeconds = 10, AudioMode = AudioMode.Off }, store, new FakeCapture(),
+            () => Task.FromResult<IExporter?>(null), _ => { }, () => true);
+        flow.StartCapture();
+        SelectRegion();
+        var countdown = await WaitForWindow<CountdownWindow>();
+        StaTest.Invoke(countdown, "Audio_Click", countdown, new RoutedEventArgs());
+        StaTest.Invoke(countdown, "Cancel_Click", countdown, new RoutedEventArgs());
+        for (var i = 0; i < 100 && !flow.IsIdle; i++)
+            await System.Windows.Threading.Dispatcher.Yield();
+        Assert.True(flow.IsIdle);
+        Assert.Equal(0, store.Saves);
+    });
+
+    private static async Task<T> WaitForWindow<T>() where T : class
+    {
+        for (var i = 0; i < 100; i++)
+        {
+            var found = PresentationSource.CurrentSources.OfType<HwndSource>()
+                .Select(source => source.RootVisual).OfType<T>().FirstOrDefault();
+            if (found != null) return found;
+            await System.Windows.Threading.Dispatcher.Yield();
+        }
+        throw new TimeoutException($"No {typeof(T).Name} appeared.");
+    }
+
     private static void SelectRegion()
     {
         var overlay = PresentationSource.CurrentSources.OfType<HwndSource>()
@@ -191,5 +220,12 @@ public sealed class CaptureFlowControllerTests
     {
         public AppSettings Load() => new();
         public void Save(AppSettings settings) { }
+    }
+
+    private sealed class RecordingSettings : ISettingsStore
+    {
+        public int Saves { get; private set; }
+        public AppSettings Load() => new();
+        public void Save(AppSettings settings) { Saves++; }
     }
 }

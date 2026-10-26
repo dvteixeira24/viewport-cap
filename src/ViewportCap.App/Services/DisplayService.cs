@@ -17,7 +17,7 @@ public static class DisplayService
  {
   var monitor=MonitorFromPoint(new NativePoint{X=r.X,Y=r.Y},MonitorDefaultToNearest);var info=new MonitorInfo{Size=Marshal.SizeOf<MonitorInfo>()};
   if(monitor!=IntPtr.Zero&&GetMonitorInfo(monitor,ref info))return new Rect(info.Work.Left,info.Work.Top,info.Work.Right-info.Work.Left,info.Work.Bottom-info.Work.Top);
-  var fallback=GetMonitors().First(m=>string.Equals(m.DeviceName,r.MonitorDeviceName,StringComparison.OrdinalIgnoreCase));return new Rect(fallback.Left,fallback.Top,fallback.Width,fallback.Height);
+  var monitors=GetMonitors();var match=monitors.FirstOrDefault(m=>string.Equals(m.DeviceName,r.MonitorDeviceName,StringComparison.OrdinalIgnoreCase));var fallback=match.DeviceName is null?monitors[0]:match;return new Rect(fallback.Left,fallback.Top,fallback.Width,fallback.Height);
  }
  // Left/Top/Width/Height are DIPs scaled by the DPI of the monitor the window is currently on, so cross-DPI placement is only exact in physical pixels (dotnet/wpf#3105).
  public static void SetPhysicalBounds(Window w,double left,double top,double width,double height){var h=new WindowInteropHelper(w).Handle;if(h!=IntPtr.Zero)SetWindowPos(h,IntPtr.Zero,(int)Math.Round(left),(int)Math.Round(top),(int)Math.Round(width),(int)Math.Round(height),SwpNoZOrder|SwpNoActivate);}

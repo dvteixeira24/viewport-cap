@@ -29,4 +29,12 @@ public sealed class DisplayServiceTests
         var region = new CaptureRegion("display", 0, 0, 0, 0, 100, 100, 192);
         Assert.Equal(workArea, DisplayService.GetNearbyBounds(region, 300, 112, workArea));
     }
+
+    [Fact]
+    public void NearbyPosition_UnknownMonitor_FallsBackWithoutThrowing()
+    {
+        var region = new CaptureRegion(@"\\.\DISPLAY99", 0, 0, 100, 100, 400, 300, 96);
+        var pos = DisplayService.GetNearbyPosition(region, 300, 112);
+        Assert.True(double.IsFinite(pos.Left) && double.IsFinite(pos.Top));
+    }
 }
