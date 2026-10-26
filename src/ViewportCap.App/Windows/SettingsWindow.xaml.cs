@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -104,6 +105,16 @@ public partial class SettingsWindow : Window
         using var dialog = new System.Windows.Forms.FolderBrowserDialog { SelectedPath = OutputFolderBox.Text };
         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             OutputFolderBox.Text = dialog.SelectedPath;
+    }
+
+    private void OpenLogs_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(AppPaths.LogsDirectory);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = AppPaths.LogsDirectory,
+            UseShellExecute = true
+        });
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
