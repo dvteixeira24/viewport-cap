@@ -1,0 +1,29 @@
+name: release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - id: version
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version
+          if ([string]::IsNullOrWhiteSpace($version)) { throw 'Version is missing from Directory.Build.props.' }
+          if (git ls-remote --tags origin "refs/tags/v$version") { throw "Tag v$version already exists." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - run: powershell -ExecutionPolicy Bypass -File tools/publish.ps1
+      - shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v${{ steps.version.outputs.version }}" "dist/viewport-cap-${{ steps.version.outputs.version }}-win-x64.zip" --target ${{ github.sha }} --draft --generate-notes
