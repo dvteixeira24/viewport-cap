@@ -77,8 +77,15 @@ public sealed class CaptureFlowController
             {
                 var countdown = new CountdownWindow(region.Value, settings.CountdownSeconds, audio, mode =>
                 {
-                    settings.AudioMode = mode;
-                    _store.Save(settings);
+                    try
+                    {
+                        settings.AudioMode = mode;
+                        _store.Save(settings);
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLog.Error("Could not save the audio mode.", ex);
+                    }
                 });
                 var start = await countdown.RunAsync();
                 audio = countdown.AudioMode;
