@@ -1,0 +1,33 @@
+<h2>Review screen audit — where we are</h2>
+<p class="subtitle">Based on ReviewWindow.xaml + ReviewWindow.xaml.cs + App.xaml. Open at http://localhost:52341</p>
+
+<div class="section">
+<div class="label">What works today</div>
+<div class="mockup"><div class="mockup-header">Current: 960×820, 5 rows — header / preview / 2 sliders / export 4-col / footer</div>
+<div class="mockup-body" style="text-align:left;font-size:13px;line-height:1.5">
+<div>✓ Preview via MediaPlayer + watchdog, fallback "Open in default player"</div>
+<div>✓ Trim times mm:ss.ff tabular, 0.25s min gap enforcement</div>
+<div>✓ 4 export combos (Format/Quality/Fps/Scale) + Keep audio, Tooltips for long paths</div>
+<div>✓ Progress already reported 0-100 from FfmpegProgressParser → ProgressBar</div>
+</div></div>
+</div>
+
+<div class="section">
+<div class="label">Gaps you named (+2 found)</div>
+<div class="split">
+<div class="mockup"><div class="mockup-header">1. Two sliders, no region view</div><div class="mockup-body" style="text-align:left;font-size:13px">Separate Start / End sliders. No timeline fill, no drag-middle, no keyboard entry. Hard to see kept vs cut.</div></div>
+<div class="mockup"><div class="mockup-header">2. Export progress is invisible</div><div class="mockup-body" style="text-align:left;font-size:13px">4px ProgressBar, no %, no ETA, no Cancel button. During export RootGrid.IsEnabled=false so Cancel via _cts is unreachable except window close.</div></div>
+</div>
+<div class="pros-cons"><div class="pros"><h4>Keep</h4><ul><li>SystemColors pairs (Window/WindowText, Highlight/HighlightText)</li><li>Min sizes 760×680, footer actions</li></ul></div>
+<div class="cons"><h4>Fix</h4><ul><li>No % text, no cancel affordance</li><li>4 equal export columns cramp at 760px</li><li>No modern theme tokens</li></ul></div></div>
+</div>
+
+<div class="section">
+<div class="label">Theme direction — pick one (clicks register)</div>
+<p class="subtitle">DESIGN.md says "familiar Windows utility" with system colors. "Modern" needs a call: evolve system theme or go custom?</p>
+<div class="options">
+<div class="option" data-choice="system-modern" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>System Modern (recommended)</h3><p>Keep SystemColors + Segoe UI. Bigger radius (8px), softer dividers, accent timeline fill using Highlight. High-contrast + light/dark OS safe. Least code.</p></div></div>
+<div class="option" data-choice="media-dark" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Media Dark</h3><p>Dark preview-first (#181818 extended), light controls below, blue accent progress + timeline. Feels like Clipchamp. Breaks DESIGN.md system rule, needs custom brushes.</p></div></div>
+<div class="option" data-choice="fluent-compact" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Fluent Compact</h3><p>Light neutral cards, 2-row export grid (2×2), pill Cancel/Export, % + file-size estimate. Middle ground, more XAML churn.</p></div></div>
+</div>
+</div>

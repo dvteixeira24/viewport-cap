@@ -1,0 +1,8 @@
+<h2>Trim selector — combined start/end</h2>
+<p class="subtitle">Current: two separate Sliders, no fill. Goal: one timeline showing kept region, draggable both ends, keyboard accessible.</p>
+<div class="options">
+<div class="option" data-choice="timeline-thumbs" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>Timeline + two thumbs (recommended)</h3><p>One track, fill = kept (Highlight brush), dim = cut. Drag either handle, drag middle to move. Below: two mm:ss.ff boxes for typing. ~1 small UserControl, keeps automation names.</p></div></div>
+<div class="option" data-choice="stacked-sliders" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Stacked sliders + fill</h3><p>Keep existing Start/End Sliders, add fill Border behind bound to values. Least code (~30 lines) but thumbs overlap, hit-test fiddly, not truly combined.</p></div></div>
+<div class="option" data-choice="scrub-marks" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Scrub + Set In/Out</h3><p>One playhead slider + [Set start] [Set end] buttons. Most accessible, zero custom drag, but no direct handle drag — slower to trim.</p></div></div>
+</div>
+<div class="mockup"><div class="mockup-header">A sketch: [cut][==== kept (drag middle) ====][cut] ○——● playhead</div><div class="mockup-body" style="text-align:left;font-size:13px">Fill uses SystemColors.Highlight, handles 12px wide, min gap 0.25s preserved in code-behind. TextBoxes validate mm:ss.ff, clamp on error.</div></div>

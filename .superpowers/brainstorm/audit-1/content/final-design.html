@@ -1,0 +1,8 @@
+<h2>Locked design — System Modern + Inline+ + Timeline</h2>
+<p class="subtitle">All three picks registered. This is what we will spec.</p>
+<div class="mockup"><div class="mockup-header">Review — 960×820: header / preview (#181818) / timeline / export / footer</div><div class="mockup-body" style="text-align:left;font-size:13px;line-height:1.6">
+<div><b>Timeline (new UserControl):</b> single track, dim cut + Highlight fill for kept, 2 handles + playhead tick. Below: Start [mm:ss.ff] End [mm:ss.ff] + duration label "kept 12.4s of 30s". Enforce 0.25s gap.</div>
+<div style="margin-top:8px"><b>Export Inline+:</b> Status line "Exporting clip.mp4 — 42%" + 6px bar + Cancel button. Only export inputs disabled during export; preview/trim stay live. Partial cleanup unchanged.</div>
+<div style="margin-top:8px"><b>System Modern:</b> same SystemColors/Segoe UI, radius 8px overlays / 4px controls, section spacing 16/20, 4-col → wraps to 2×2 under 860px. No new deps.</div>
+</div></div>
+<div class="section"><div class="label">Files touched (only these)</div><p class="subtitle">ReviewWindow.xaml + .cs, new TrimTimeline.xaml/.cs, App.xaml tokens (radius/spacing only), FfmpegProgressParser % already exists — add ETA only if cheap. Tests: trim clamp + export cancel.</p></div>

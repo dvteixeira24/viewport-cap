@@ -1,0 +1,9 @@
+<h2>Export progress — pick the interaction</h2>
+<p class="subtitle">Current: StatusText "Exporting..." + 4px bar, RootGrid disabled so Cancel unreachable. Progress value already exists.</p>
+<div class="options">
+<div class="option" data-choice="inline-plus" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>Inline+ (recommended, least code)</h3><p>Keep inline section. Add: % text + file name, Cancel button beside Export, keep preview/trim enabled, only export controls disabled. 20 lines XAML + unlock _cts.</p></div></div>
+<div class="option" data-choice="preview-overlay" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Preview overlay</h3><p>Dim preview with centered card: spinner, %, ETA from parser speed, Cancel. Export section collapses to status line. Nicer, +80 lines, needs ETA calc.</p></div></div>
+<div class="option" data-choice="dialog" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Modal dialog</h3><p>Separate ExportProgress dialog blocks review. Simplest isolation but hides preview, breaks "watch while exporting" — not recommended.</p></div></div>
+</div>
+<div class="section"><div class="label">What changes in code (either A or B)</div>
+<p class="subtitle">Stop disabling RootGrid. Disable only Format/Quality/Fps/Scale/Save/Export/Discard. Wire existing CancellationTokenSource to visible Cancel. Add Progress reports % to text + bar. Partial-file cleanup already exists.</p></div>
