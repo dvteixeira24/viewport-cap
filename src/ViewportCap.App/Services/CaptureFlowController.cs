@@ -190,7 +190,7 @@ public sealed class CaptureFlowController
             {
                 // The recorder is still writing; reviewing now would export a torn file, so keep the file and stop without review.
                 FileLog.Error("Recording finalisation is slow; keeping the file without review.", ex);
-                if (!_shuttingDown) MessageBox.Show("Recording is still finalizing. The temporary file was kept in the recordings folder.", "viewport-cap");
+                if (!_shuttingDown) _showToast("Recording is still finalizing. The temporary file was kept in the recordings folder.");
                 GoIdle();
                 return;
             }
