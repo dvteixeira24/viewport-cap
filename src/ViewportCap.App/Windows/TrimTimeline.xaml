@@ -2,11 +2,53 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Height="44" MinWidth="200">
-  <Grid x:Name="Track" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" Margin="6,14"
+  <UserControl.Resources>
+    <Style x:Key="TimelineThumb" TargetType="Thumb">
+      <Setter Property="Width" Value="16"/>
+      <Setter Property="Height" Value="28"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Cursor" Value="SizeWE"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Thumb">
+            <Border x:Name="Chrome"
+                    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"
+                    BorderThickness="1" CornerRadius="6">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Rectangle Width="1" Height="12" Fill="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Margin="0,0,2,0"/>
+                <Rectangle Width="1" Height="12" Fill="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Margin="0,0,2,0"/>
+                <Rectangle Width="1" Height="12" Fill="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"/>
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                <Setter TargetName="Chrome" Property="BorderThickness" Value="2"/>
+              </Trigger>
+              <Trigger Property="IsDragging" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                <Setter TargetName="Chrome" Property="BorderThickness" Value="2"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+  <Grid x:Name="Track" Background="Transparent" Margin="8,14"
         PreviewMouseLeftButtonDown="Track_Press" PreviewMouseMove="Track_Move" PreviewMouseLeftButtonUp="Track_Release">
-    <Rectangle x:Name="Kept" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" HorizontalAlignment="Stretch"/>
-    <Rectangle x:Name="PlayheadLine" Width="2" Fill="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" HorizontalAlignment="Left" Margin="0,0,0,0"/>
-    <Thumb x:Name="StartThumb" Width="12" HorizontalAlignment="Left" AutomationProperties.Name="Trim start" Cursor="SizeWE"/>
-    <Thumb x:Name="EndThumb" Width="12" HorizontalAlignment="Left" AutomationProperties.Name="Trim end" Cursor="SizeWE"/>
+    <Border Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" CornerRadius="4"/>
+    <Rectangle x:Name="Kept" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" RadiusX="2" RadiusY="2" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
+    <Rectangle x:Name="PlayheadLine" Width="2" Fill="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+    <Thumb x:Name="StartThumb" Style="{StaticResource TimelineThumb}" HorizontalAlignment="Left" AutomationProperties.Name="Trim start"/>
+    <Thumb x:Name="EndThumb" Style="{StaticResource TimelineThumb}" HorizontalAlignment="Left" AutomationProperties.Name="Trim end"/>
   </Grid>
 </UserControl>

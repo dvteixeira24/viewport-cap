@@ -60,8 +60,8 @@ public partial class TrimTimeline : System.Windows.Controls.UserControl
         var b = Math.Clamp(End / Duration, 0, 1) * w;
         var p = Math.Clamp(Playhead / Duration, 0, 1) * w;
         Kept.Margin = new Thickness(a, 0, Math.Max(0, w - b), 0);
-        StartThumb.Margin = new Thickness(a - 6, 0, 0, 0);
-        EndThumb.Margin = new Thickness(b - 6, 0, 0, 0);
+        StartThumb.Margin = new Thickness(a - 8, 0, 0, 0);
+        EndThumb.Margin = new Thickness(b - 8, 0, 0, 0);
         PlayheadLine.Margin = new Thickness(p - 1, 0, 0, 0);
     }
 
