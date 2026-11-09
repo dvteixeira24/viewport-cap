@@ -1,0 +1,12 @@
+<UserControl x:Class="ViewportCap.App.Windows.TrimTimeline"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="44" MinWidth="200">
+  <Grid x:Name="Track" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" Margin="6,14"
+        PreviewMouseLeftButtonDown="Track_Press" PreviewMouseMove="Track_Move" PreviewMouseLeftButtonUp="Track_Release">
+    <Rectangle x:Name="Kept" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" HorizontalAlignment="Stretch"/>
+    <Rectangle x:Name="PlayheadLine" Width="2" Fill="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" HorizontalAlignment="Left" Margin="0,0,0,0"/>
+    <Thumb x:Name="StartThumb" Width="12" HorizontalAlignment="Left" AutomationProperties.Name="Trim start" Cursor="SizeWE"/>
+    <Thumb x:Name="EndThumb" Width="12" HorizontalAlignment="Left" AutomationProperties.Name="Trim end" Cursor="SizeWE"/>
+  </Grid>
+</UserControl>

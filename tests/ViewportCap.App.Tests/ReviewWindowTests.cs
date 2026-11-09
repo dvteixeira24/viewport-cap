@@ -69,6 +69,30 @@ public sealed class ReviewWindowTests
     });
 
     [Fact]
+    public Task Timeline_InitializesFullRange() => StaTest.Run(() =>
+    {
+        var recording = new CaptureResult(Path.Combine(Path.GetTempPath(), "viewport-cap-missing.mp4"), false, TimeSpan.FromSeconds(5), 640, 480);
+        var window = new ReviewWindow(recording, new AppSettings { OutputFolder = Path.GetTempPath() }, new BlockingExporter(), _ => { });
+        try
+        {
+            var timeline = (TrimTimeline)window.FindName("Timeline");
+            Assert.NotNull(timeline);
+            Assert.Equal(0, timeline.Start);
+            Assert.Equal(5, timeline.End);
+            Assert.Equal(5, timeline.Duration);
+            var settings = (ReviewSettings)StaTest.Invoke(window, "BuildSettings")!;
+            Assert.Equal(TimeSpan.Zero, settings.TrimStart);
+            Assert.Equal(TimeSpan.FromSeconds(5), settings.TrimEnd);
+        }
+        finally
+        {
+            window.GetType().GetField("_deleted", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(window, true);
+            window.Close();
+        }
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task Export_ShowsCancelDuringExport() => StaTest.Run(async () =>
     {
         var exporter = new BlockingExporter();

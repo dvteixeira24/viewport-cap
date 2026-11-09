@@ -98,3 +98,9 @@ Controls use subtly rounded corners; floating overlays use the larger radius. Te
 - **Do** check constrained window sizes and long file/device names.
 - **Don't** introduce a fixed dark foreground palette into native light controls.
 - **Don't** add decorative icons or imagery to task-focused windows.
+
+## Review refresh 2026-11-09
+
+- Trim uses one `TrimTimeline` track (Highlight fill for kept, dim cut, two thumbs, playhead, middle-drag) with typed `mm:ss.ff` boxes; 0.25s minimum gap preserved.
+- Export shows `StatusText` plus percent text, 6px bar, and a Cancel button; only export inputs disable during export.
+- `OverlayRadius` 8px rounding applied to the preview surface; no brush hue changes. Export grid reflow under 860px deferred: 4 columns remain usable at the 760px minimum.
