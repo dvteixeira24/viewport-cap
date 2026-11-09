@@ -26,7 +26,7 @@
       </StackPanel>
     </Grid>
     <Border Grid.Row="3" Padding="28,20" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
-      <StackPanel>
+      <StackPanel x:Name="ExportInputs">
         <TextBlock Text="Export options" Style="{DynamicResource SectionHeading}"/>
         <Grid>
           <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions>
@@ -36,16 +36,20 @@
           <StackPanel Grid.Column="6"><Label Content="_Scale" Target="{Binding ElementName=ScaleBox}"/><ComboBox x:Name="ScaleBox"/></StackPanel>
         </Grid>
         <CheckBox x:Name="KeepAudioBox" Content="Keep _audio" Margin="0,12,0,0"/>
-        <TextBlock x:Name="StatusText" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite"/>
-        <ProgressBar x:Name="Progress" Height="4" Margin="0,8,0,0" AutomationProperties.Name="Export progress"/>
+        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+          <TextBlock x:Name="StatusText" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+          <TextBlock x:Name="PercentText" Margin="8,0,0,0" Typography.NumeralAlignment="Tabular"/>
+        </StackPanel>
+        <ProgressBar x:Name="Progress" Height="6" Maximum="100" Margin="0,8,0,0" AutomationProperties.Name="Export progress"/>
       </StackPanel>
     </Border>
     <Border Grid.Row="4" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Padding="28,16">
       <Grid>
         <Button Content="_Discard" Click="Discard_Click" HorizontalAlignment="Left"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click" IsEnabled="False" Visibility="Collapsed"/>
           <Button Content="Save _as…" Click="SaveAs_Click"/>
-          <Button Content="E_xport" Click="Export_Click" Style="{DynamicResource PrimaryButton}" MinWidth="112" Margin="8,0,0,0"/>
+          <Button x:Name="ExportButton" Content="E_xport" Click="Export_Click" Style="{DynamicResource PrimaryButton}" MinWidth="112" Margin="8,0,0,0"/>
         </StackPanel>
       </Grid>
     </Border>
