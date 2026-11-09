@@ -2,9 +2,9 @@ using System.Runtime.InteropServices;using System.Windows.Interop;using Viewport
 namespace ViewportCap.App.Services;
 public sealed class HotkeyService:IDisposable
 {
- private const int HotkeyId=0x9000,WmHotkey=0x0312;private HwndSource? _source;private Action? _callback;private HotkeyGesture? _current;
+ private const int HotkeyId=0x9000,ProbeId=0x9001,WmHotkey=0x0312;private HwndSource? _source;private Action? _callback;private HotkeyGesture? _current;
  public bool TryRegister(HotkeyGesture gesture,Action callback){EnsureSource();if(_current is not null)UnregisterHotKey(_source!.Handle,HotkeyId);if(!RegisterHotKey(_source!.Handle,HotkeyId,(uint)gesture.Modifiers,gesture.VirtualKey)){if(_current is{} old)RegisterHotKey(_source.Handle,HotkeyId,(uint)old.Modifiers,old.VirtualKey);return false;}_current=gesture;_callback=callback;return true;}
- public bool CanRegister(HotkeyGesture gesture){EnsureSource();if(_current is{} current)UnregisterHotKey(_source!.Handle,HotkeyId);var registered=RegisterHotKey(_source!.Handle,HotkeyId,(uint)gesture.Modifiers,gesture.VirtualKey);if(registered)UnregisterHotKey(_source.Handle,HotkeyId);if(_current is{} previous&&!RegisterHotKey(_source!.Handle,HotkeyId,(uint)previous.Modifiers,previous.VirtualKey))_current=null;return registered;}
+ public bool CanRegister(HotkeyGesture gesture){EnsureSource();if(_current==gesture)return true;var registered=RegisterHotKey(_source!.Handle,ProbeId,(uint)gesture.Modifiers,gesture.VirtualKey);if(registered)UnregisterHotKey(_source.Handle,ProbeId);return registered;}
  public void Unregister(){if(_source!=null)UnregisterHotKey(_source.Handle,HotkeyId);_current=null;}
  public void Dispose(){if(_source==null)return;Unregister();_source.RemoveHook(WndProc);_source.Dispose();_source=null;}
  private void EnsureSource(){if(_source!=null)return;var p=new HwndSourceParameters("ViewportCapHotkey"){Width=0,Height=0,WindowStyle=0,ExtendedWindowStyle=0};_source=new HwndSource(p);_source.AddHook(WndProc);}

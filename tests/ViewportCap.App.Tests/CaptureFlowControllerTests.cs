@@ -30,7 +30,7 @@ public sealed class CaptureFlowControllerTests
     });
 
     [Fact]
-    public Task Shutdown_WaitsForRecorderStillFinalizingBehindReview() => StaTest.Run(async () =>
+    public Task Shutdown_SlowFinalizeKeepsFileWithoutReview() => StaTest.Run(async () =>
     {
         var engine = new FakeCapture { Cleanup = new(TaskCreationOptions.RunContinuationsAsynchronously) };
         var flow = CreateFlow(engine);
@@ -43,17 +43,17 @@ public sealed class CaptureFlowControllerTests
         await engine.StopRequested.Task;
         engine.StopResult.SetException(new TimeoutException());
         await StaTest.Field<Task>(flow, "_captureTask");
-        Assert.NotNull(StaTest.Field<ReviewWindow?>(flow, "_review"));
+        Assert.Null(StaTest.Field<ReviewWindow?>(flow, "_review"));
+        Assert.True(flow.IsIdle);
 
         var shutdown = flow.ShutdownAsync();
         try
         {
-            Assert.False(shutdown.IsCompleted, "Review was closed without waiting for the native writer.");
             Assert.True(File.Exists(path));
             await engine.Cancelled.Task;
             engine.Cleanup.TrySetResult();
             await shutdown;
-            Assert.False(File.Exists(path));
+            Assert.True(File.Exists(path));
         }
         finally
         {

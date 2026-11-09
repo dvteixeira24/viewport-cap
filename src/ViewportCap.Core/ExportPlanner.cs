@@ -11,6 +11,8 @@ public static class ExportPlanner
     public static ExportPlan CreateForPath(ReviewSettings settings,string outputPath)
     {
         ValidateOrThrow(settings); if(string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentException("Output path is required.",nameof(outputPath));
+        var expected=ExportNaming.Extension(settings.Format);
+        if(!string.Equals(Path.GetExtension(outputPath),expected,StringComparison.OrdinalIgnoreCase)) throw new ArgumentException($"Output path must end with {expected} for {settings.Format}.",nameof(outputPath));
         if(string.Equals(Path.GetFullPath(outputPath),Path.GetFullPath(settings.SourcePath),StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Output path must not be the temporary recording.",nameof(outputPath));
         return new ExportPlan(settings,outputPath,CanCopySource(settings));
     }

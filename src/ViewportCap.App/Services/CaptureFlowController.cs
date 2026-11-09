@@ -25,6 +25,7 @@ public sealed class CaptureFlowController
     private ReviewWindow? _review;
     private Task _captureTask = Task.CompletedTask;
     private bool _shuttingDown;
+    private readonly object _gate = new();
 
     public CaptureFlowController(Func<AppSettings> getSettings, ISettingsStore store, ICaptureEngine capture, Func<Task<IExporter?>> exporterProvider, Action<string> showToast, Func<bool> isAvailable)
     {
@@ -53,8 +54,11 @@ public sealed class CaptureFlowController
 
     public void StartCapture()
     {
-        if (_shuttingDown || !IsIdle) return;
-        _captureTask = RunCaptureAsync();
+        lock (_gate)
+        {
+            if (_shuttingDown || !IsIdle || !_captureTask.IsCompleted) return;
+            _captureTask = RunCaptureAsync();
+        }
     }
 
     private async Task RunCaptureAsync()
@@ -177,7 +181,6 @@ public sealed class CaptureFlowController
                 return;
             }
 
-            var stopRequestedAt = DateTime.UtcNow;
             CaptureResult result;
             try
             {
@@ -185,9 +188,11 @@ public sealed class CaptureFlowController
             }
             catch (TimeoutException ex) when (HasPlausibleFile(path))
             {
-                // Finalisation is still running; the recorder keeps writing and the file is kept, so review it instead of failing.
-                FileLog.Error("Recording finalisation is slow; keeping the file for review.", ex);
-                result = new CaptureResult(path, audio != AudioMode.Off, stopRequestedAt - startedAt, region.Value.Width, region.Value.Height);
+                // The recorder is still writing; reviewing now would export a torn file, so keep the file and stop without review.
+                FileLog.Error("Recording finalisation is slow; keeping the file without review.", ex);
+                if (!_shuttingDown) MessageBox.Show("Recording is still finalizing. The temporary file was kept in the recordings folder.", "viewport-cap");
+                GoIdle();
+                return;
             }
 
             FileLog.Info($"Recording complete: {result.FilePath} ({result.Duration}).");
