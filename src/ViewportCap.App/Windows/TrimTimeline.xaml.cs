@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using ViewportCap.Core;
 
 namespace ViewportCap.App.Windows;
@@ -65,9 +66,19 @@ public partial class TrimTimeline : System.Windows.Controls.UserControl
     }
 
     // Drag the kept middle to move the whole range.
+    public static bool ShouldIgnoreTrackPress(object? source)
+    {
+        var d = source as DependencyObject;
+        while (d != null)
+        {
+            if (d is Thumb) return true;
+            d = VisualTreeHelper.GetParent(d);
+        }
+        return false;
+    }
     private void Track_Press(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is Thumb) return;
+        if (ShouldIgnoreTrackPress(e.OriginalSource)) return;
         _moving = true;
         _grabX = e.GetPosition(Track).X;
         _grabStart = Start;
